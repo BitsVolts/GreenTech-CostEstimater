@@ -13,16 +13,17 @@ import {
   Select,
   MenuItem,
   IconButton,
-  Divider, Tabs, Tab, Fade
+  Divider,
+  Tabs,
+  Tab,
 } from "@mui/material"
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
 import { Formik, Form, FieldArray } from "formik"
 import InsertChartIcon from "@mui/icons-material/InsertChart";
 import SettingsIcon from "@mui/icons-material/Settings";
 import * as Yup from "yup"
 import CustomThemeProvider from "./components/ThemeProvider"
-
+import { ToastContainer, toast } from "react-toastify";
+import 'react-toastify/dist/ReactToastify.css';
 
 
 // Icons
@@ -104,6 +105,63 @@ const costEstimatorValidation = Yup.object({
   finishingType: Yup.string().required("Finishing type is required"),
 })
 
+const rateConfigValidation = Yup.object({
+  materialTypes: Yup.array()
+    .of(
+      Yup.object({
+        type: Yup.string().required("Material type is required"),
+        costPerKg: Yup.number().positive("Cost per kg must be positive").required("Cost per kg is required"),
+        unit: Yup.string().required("Unit is required"),
+      }),
+    )
+    .min(1, "At least one material type is required"),
+
+  cmykRate: Yup.number().positive("CMYK rate must be positive").required("CMYK rate is required"),
+
+  cmykMinSheets: Yup.number()
+    .positive("Minimum threshold sheets must be positive")
+    .required("Minimum threshold sheets is required"),
+
+  pantoneRate: Yup.number().positive("Pantone rate must be positive").required("Pantone rate is required"),
+
+  pantoneMinAmount: Yup.number().positive("Minimum amount must be positive").required("Minimum amount is required"),
+
+  laminationRates: Yup.array().of(
+    Yup.object({
+      finishType: Yup.string().required("Finish type is required"),
+      coldGlueRate: Yup.number().positive("Cold glue rate must be positive").required("Cold glue rate is required"),
+      thermalRate: Yup.number().positive("Thermal rate must be positive").required("Thermal rate is required"),
+      unit: Yup.string().required("Unit is required"),
+    }),
+  ),
+
+  finishingRates: Yup.object({
+    foilStamping: Yup.number()
+      .positive("Foil stamping rate must be positive")
+      .required("Foil stamping rate is required"),
+    dripOff: Yup.number().positive("Drip off rate must be positive").required("Drip off rate is required"),
+    spotUV: Yup.number().positive("Spot UV rate must be positive").required("Spot UV rate is required"),
+    metpet: Yup.number().positive("Metpet rate must be positive").required("Metpet rate is required"),
+  }),
+
+  dieCutting: Yup.object({
+    ratePerSheet: Yup.number().positive("Rate per sheet must be positive").required("Rate per sheet is required"),
+  }),
+
+  pastingRates: Yup.object({
+    sidePasting: Yup.number().positive("Side pasting rate must be positive").required("Side pasting rate is required"),
+    bottomPasting: Yup.number()
+      .positive("Bottom pasting rate must be positive")
+      .required("Bottom pasting rate is required"),
+    taping: Yup.number().positive("Taping rate must be positive").required("Taping rate is required"),
+  }),
+
+  machineConfig: Yup.object({
+    speed: Yup.number().positive("Machine speed must be positive").required("Machine speed is required"),
+    costPerHour: Yup.number().positive("Cost per hour must be positive").required("Cost per hour is required"),
+  }),
+})
+
 // Initial values
 const costEstimatorInitialValues = {
   length: "",
@@ -125,6 +183,7 @@ const rateConfigInitialValues = {
     { type: "FBB", costPerKg: "45", unit: "INR/kg" },
     { type: "Kraft Brown", costPerKg: "38", unit: "INR/kg" },
     { type: "Kraft White", costPerKg: "42", unit: "INR/kg" },
+    { type: "Art Card", costPerKg: "50", unit: "INR/kg" },
   ],
   cmykRate: "2.5",
   cmykMinSheets: "1000",
@@ -156,45 +215,40 @@ const rateConfigInitialValues = {
 }
 
 export default function MonoCartonEstimator() {
-  const [tabValue, setTabValue] = useState(0)
+  const [tabValue, setTabValue] = useState(0);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      // Simulate saving logic
-      await new Promise((res) => setTimeout(res, 1500));
-
-      toast.success("Configurations saved successfully!", {
-        position: "top-right",
-        autoClose: 3000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-      });
-    } catch (err) {
-      toast.error("Something went wrong.");
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
 
   const handleEstimate = async () => {
     setIsSubmitting(true);
     try {
-      // Simulate delay or actual cost estimation logic
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 1000));
 
-      // ✅ Success toast
       toast.success("Cost estimated successfully!");
-    } catch (err) {
-      // ❌ Error toast
-      toast.error("Failed to estimate cost. Try again.");
+    } catch (error) {
+      toast.error("Failed to estimate cost.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    try {
+      // Simulate API or save logic
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      toast.success("Configurations saved successfully!");
+    } catch (error) {
+      toast.error("Failed to save configurations.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
 
   const handleCostEstimatorSubmit = (values, { setSubmitting }) => {
     console.log("Cost Estimator values:", values)
@@ -221,7 +275,7 @@ export default function MonoCartonEstimator() {
           py: 4,
         }}
       >
-        <Container maxWidth={tabValue === 0 ? "md" : "lg"}>
+        <Container maxWidth={tabValue === 0 ? "md" : "md"}>
           <Paper
             elevation={0}
             sx={{
@@ -244,8 +298,6 @@ export default function MonoCartonEstimator() {
               </Typography>
 
               {/* Top Tabs */}
-
-
               <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", mt: 2, gap: 2 }}>
                 <Box
                   sx={{
@@ -253,19 +305,17 @@ export default function MonoCartonEstimator() {
                     backgroundColor: "#f1f3f5",
                     borderRadius: "12px",
                     boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.06)",
-                    px: "6px", // horizontal padding to add spacing on both sides
-                    py: "4px",
+                    p: "4px",
                     width: "fit-content",
                   }}
                 >
-
                   {/* Sliding background rectangle */}
                   <Box
                     sx={{
                       position: "absolute",
                       top: 4,
-                      left: tabValue === 0 ? 6 : "calc(50% + 6px)", // match px value above
-                      width: "calc(50% - 12px)", // also subtract both paddings
+                      left: tabValue === 0 ? 4 : "calc(50% + 4px)",
+                      width: "calc(50% - 8px)",
                       height: "44px",
                       backgroundColor: "#246bfd",
                       borderRadius: "8px",
@@ -273,7 +323,6 @@ export default function MonoCartonEstimator() {
                       zIndex: 1,
                     }}
                   />
-
 
                   <Tabs
                     value={tabValue}
@@ -285,7 +334,6 @@ export default function MonoCartonEstimator() {
                       "& .MuiTabs-flexContainer": {
                         position: "relative",
                         zIndex: 2,
-                        gap: "8px", // Add equal spacing between both tabs
                       },
                       "& .MuiTab-root": {
                         minWidth: "160px",
@@ -319,13 +367,12 @@ export default function MonoCartonEstimator() {
                       disableRipple
                     />
                     <Tab
-                      icon={<SettingsIcon sx={{ marginLeft: 1 }} fontSize="small" />}
+                      icon={<SettingsIcon fontSize="small" />}
                       iconPosition="start"
                       label="Rate Configuration"
                       disableRipple
                     />
                   </Tabs>
-
                 </Box>
               </Box>
             </Box>
@@ -381,6 +428,7 @@ export default function MonoCartonEstimator() {
                                 error={touched.length && Boolean(errors.length)}
                                 size="small"
                                 sx={{ "& .MuiOutlinedInput-root": { height: "40px" } }}
+                                helperText={touched.length && errors.length}
                               />
                             </Grid>
                             <Grid item size={{ xs: 6 }}>
@@ -400,6 +448,7 @@ export default function MonoCartonEstimator() {
                                 error={touched.width && Boolean(errors.width)}
                                 size="small"
                                 sx={{ "& .MuiOutlinedInput-root": { height: "40px" } }}
+                                helperText={touched.width && errors.width}
                               />
                             </Grid>
                           </Grid>
@@ -445,6 +494,7 @@ export default function MonoCartonEstimator() {
                                 error={touched.sheetLength && Boolean(errors.sheetLength)}
                                 size="small"
                                 sx={{ "& .MuiOutlinedInput-root": { height: "40px" } }}
+                                helperText={touched.sheetLength && errors.sheetLength}
                               />
                             </Grid>
                             <Grid item size={{ xs: 6 }}>
@@ -464,6 +514,7 @@ export default function MonoCartonEstimator() {
                                 error={touched.sheetWidth && Boolean(errors.sheetWidth)}
                                 size="small"
                                 sx={{ "& .MuiOutlinedInput-root": { height: "40px" } }}
+                                helperText={touched.sheetWidth && errors.sheetWidth}
                               />
                             </Grid>
                           </Grid>
@@ -492,6 +543,7 @@ export default function MonoCartonEstimator() {
                             error={touched.quantity && Boolean(errors.quantity)}
                             size="small"
                             sx={{ "& .MuiOutlinedInput-root": { height: "40px" } }}
+                            helperText={touched.quantity && errors.quantity}
                           />
                         </Grid>
                         <Grid item size={{ xs: 6 }}>
@@ -514,6 +566,7 @@ export default function MonoCartonEstimator() {
                             error={touched.gsm && Boolean(errors.gsm)}
                             size="small"
                             sx={{ mb: 2, "& .MuiOutlinedInput-root": { height: "40px" } }}
+                            helperText={touched.gsm && errors.gsm}
                           />
                           <Typography
                             variant="body2"
@@ -534,6 +587,7 @@ export default function MonoCartonEstimator() {
                                   color: values.materialType ? "#212529" : "#adb5bd",
                                 },
                               }}
+                              error={touched.materialType && Boolean(errors.materialType)}
                             >
                               <MenuItem value="" disabled>
                                 Select material type
@@ -576,6 +630,7 @@ export default function MonoCartonEstimator() {
                                     color: values.cmykColors ? "#212529" : "#adb5bd",
                                   },
                                 }}
+                                error={touched.cmykColors && Boolean(errors.cmykColors)}
                               >
                                 <MenuItem value="" disabled>
                                   Select CMYK colors
@@ -607,6 +662,7 @@ export default function MonoCartonEstimator() {
                                     color: values.pantoneColors ? "#212529" : "#adb5bd",
                                   },
                                 }}
+                                error={touched.pantoneColors && Boolean(errors.pantoneColors)}
                               >
                                 <MenuItem value="" disabled>
                                   Select Pantone colors
@@ -646,6 +702,7 @@ export default function MonoCartonEstimator() {
                                   color: values.laminationType ? "#212529" : "#adb5bd",
                                 },
                               }}
+                              error={touched.laminationType && Boolean(errors.laminationType)}
                             >
                               <MenuItem value="" disabled>
                                 Select lamination
@@ -674,6 +731,7 @@ export default function MonoCartonEstimator() {
                                   color: values.finishingType ? "#212529" : "#adb5bd",
                                 },
                               }}
+                              error={touched.finishingType && Boolean(errors.finishingType)}
                             >
                               <MenuItem value="" disabled>
                                 Select finishing
@@ -711,6 +769,7 @@ export default function MonoCartonEstimator() {
                                   color: values.pastingType ? "#212529" : "#adb5bd",
                                 },
                               }}
+                              error={touched.pastingType && Boolean(errors.pastingType)}
                             >
                               <MenuItem value="" disabled>
                                 Select assembly type
@@ -727,7 +786,6 @@ export default function MonoCartonEstimator() {
                       <ToastContainer position="top-right" autoClose={3000} />
 
                       <Button
-                        type="button"
                         fullWidth
                         variant="contained"
                         disabled={isSubmitting}
@@ -745,6 +803,7 @@ export default function MonoCartonEstimator() {
                       >
                         💰 {isSubmitting ? "Calculating..." : "Estimate Cost"}
                       </Button>
+
                     </Form>
                   )}
                 </Formik>
@@ -754,8 +813,12 @@ export default function MonoCartonEstimator() {
             {/* Rate Configuration Form */}
             {tabValue === 1 && (
               <Box sx={{ px: 4, pb: 4 }}>
-                <Formik initialValues={rateConfigInitialValues} onSubmit={handleRateConfigSubmit}>
-                  {({ values, handleChange, handleBlur, isSubmitting }) => (
+                <Formik
+                  initialValues={rateConfigInitialValues}
+                  validationSchema={rateConfigValidation}
+                  onSubmit={handleRateConfigSubmit}
+                >
+                  {({ values, handleChange, handleBlur, isSubmitting, errors, touched }) => (
                     <Form>
                       {/* Material Cost Configuration */}
                       <Box sx={{ mb: 4 }}>
@@ -798,7 +861,7 @@ export default function MonoCartonEstimator() {
                                     Unit
                                   </Typography>
                                 </Grid>
-                                <Grid item xs={2}></Grid>
+                                <Grid item size={{ xs: 2 }}></Grid>
                               </Grid>
 
                               {/* Material Rows */}
@@ -811,6 +874,10 @@ export default function MonoCartonEstimator() {
                                         value={material.type}
                                         onChange={handleChange}
                                         sx={{ height: "36px" }}
+                                        error={
+                                          touched.materialTypes?.[index]?.type &&
+                                          Boolean(errors.materialTypes?.[index]?.type)
+                                        }
                                       >
                                         <MenuItem value="FBB">FBB</MenuItem>
                                         <MenuItem value="Kraft Brown">Kraft Brown</MenuItem>
@@ -825,6 +892,15 @@ export default function MonoCartonEstimator() {
                                       name={`materialTypes.${index}.costPerKg`}
                                       value={material.costPerKg}
                                       onChange={handleChange}
+                                      onBlur={handleBlur}
+                                      error={
+                                        touched.materialTypes?.[index]?.costPerKg &&
+                                        Boolean(errors.materialTypes?.[index]?.costPerKg)
+                                      }
+                                      helperText={
+                                        touched.materialTypes?.[index]?.costPerKg &&
+                                        errors.materialTypes?.[index]?.costPerKg
+                                      }
                                       size="small"
                                       sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
                                     />
@@ -835,11 +911,12 @@ export default function MonoCartonEstimator() {
                                       name={`materialTypes.${index}.unit`}
                                       value={material.unit}
                                       onChange={handleChange}
+                                      onBlur={handleBlur}
                                       size="small"
                                       sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
                                     />
                                   </Grid>
-                                  <Grid item xs={2} sx={{ display: "flex", alignItems: "center" }}>
+                                  <Grid item size={{ xs: 2 }} sx={{ display: "flex", alignItems: "center" }}>
                                     <IconButton size="small" onClick={() => remove(index)}>
                                       <DeleteIcon />
                                     </IconButton>
@@ -887,8 +964,11 @@ export default function MonoCartonEstimator() {
                               name="cmykRate"
                               value={values.cmykRate}
                               onChange={handleChange}
+                              onBlur={handleBlur}
                               size="small"
                               sx={{ mb: 2, "& .MuiOutlinedInput-root": { height: "36px" } }}
+                              error={touched.cmykRate && Boolean(errors.cmykRate)}
+                              helperText={touched.cmykRate && errors.cmykRate}
                             />
                             <Typography variant="body2" sx={{ fontSize: "12px", color: "#6c757d", mb: 1 }}>
                               INR/1000 sheets/color
@@ -904,8 +984,11 @@ export default function MonoCartonEstimator() {
                               name="cmykMinSheets"
                               value={values.cmykMinSheets}
                               onChange={handleChange}
+                              onBlur={handleBlur}
                               size="small"
                               sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                              error={touched.cmykMinSheets && Boolean(errors.cmykMinSheets)}
+                              helperText={touched.cmykMinSheets && errors.cmykMinSheets}
                             />
                           </Grid>
                           <Grid item size={{ xs: 6 }}>
@@ -920,8 +1003,11 @@ export default function MonoCartonEstimator() {
                               name="pantoneRate"
                               value={values.pantoneRate}
                               onChange={handleChange}
+                              onBlur={handleBlur}
                               size="small"
                               sx={{ mb: 2, "& .MuiOutlinedInput-root": { height: "36px" } }}
+                              error={touched.pantoneRate && Boolean(errors.pantoneRate)}
+                              helperText={touched.pantoneRate && errors.pantoneRate}
                             />
                             <Typography variant="body2" sx={{ fontSize: "12px", color: "#6c757d", mb: 1 }}>
                               INR/1000 sheets/color
@@ -939,8 +1025,11 @@ export default function MonoCartonEstimator() {
                                   name="pantoneMinAmount"
                                   value={values.pantoneMinAmount}
                                   onChange={handleChange}
+                                  onBlur={handleBlur}
                                   size="small"
                                   sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                  error={touched.pantoneMinAmount && Boolean(errors.pantoneMinAmount)}
+                                  helperText={touched.pantoneMinAmount && errors.pantoneMinAmount}
                                 />
                               </Grid>
                               <Grid item size={{ xs: 4 }}>
@@ -1004,8 +1093,17 @@ export default function MonoCartonEstimator() {
                                 name={`laminationRates.${index}.coldGlueRate`}
                                 value={rate.coldGlueRate}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                                 size="small"
                                 sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                error={
+                                  touched.laminationRates?.[index]?.coldGlueRate &&
+                                  Boolean(errors.laminationRates?.[index]?.coldGlueRate)
+                                }
+                                helperText={
+                                  touched.laminationRates?.[index]?.coldGlueRate &&
+                                  errors.laminationRates?.[index]?.coldGlueRate
+                                }
                               />
                             </Grid>
                             <Grid item size={{ xs: 3 }}>
@@ -1014,8 +1112,17 @@ export default function MonoCartonEstimator() {
                                 name={`laminationRates.${index}.thermalRate`}
                                 value={rate.thermalRate}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                                 size="small"
                                 sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                error={
+                                  touched.laminationRates?.[index]?.thermalRate &&
+                                  Boolean(errors.laminationRates?.[index]?.thermalRate)
+                                }
+                                helperText={
+                                  touched.laminationRates?.[index]?.thermalRate &&
+                                  errors.laminationRates?.[index]?.thermalRate
+                                }
                               />
                             </Grid>
                             <Grid item size={{ xs: 3 }}>
@@ -1055,8 +1162,15 @@ export default function MonoCartonEstimator() {
                                   name="finishingRates.foilStamping"
                                   value={values.finishingRates.foilStamping}
                                   onChange={handleChange}
+                                  onBlur={handleBlur}
                                   size="small"
                                   sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                  error={
+                                    touched.finishingRates?.foilStamping && Boolean(errors.finishingRates?.foilStamping)
+                                  }
+                                  helperText={
+                                    touched.finishingRates?.foilStamping && errors.finishingRates?.foilStamping
+                                  }
                                 />
                               </Grid>
                               <Grid item size={{ xs: 3 }}>
@@ -1077,8 +1191,11 @@ export default function MonoCartonEstimator() {
                                   name="finishingRates.dripOff"
                                   value={values.finishingRates.dripOff}
                                   onChange={handleChange}
+                                  onBlur={handleBlur}
                                   size="small"
                                   sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                  error={touched.finishingRates?.dripOff && Boolean(errors.finishingRates?.dripOff)}
+                                  helperText={touched.finishingRates?.dripOff && errors.finishingRates?.dripOff}
                                 />
                               </Grid>
                               <Grid item size={{ xs: 3 }}>
@@ -1101,8 +1218,11 @@ export default function MonoCartonEstimator() {
                                   name="finishingRates.spotUV"
                                   value={values.finishingRates.spotUV}
                                   onChange={handleChange}
+                                  onBlur={handleBlur}
                                   size="small"
                                   sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                  error={touched.finishingRates?.spotUV && Boolean(errors.finishingRates?.spotUV)}
+                                  helperText={touched.finishingRates?.spotUV && errors.finishingRates?.spotUV}
                                 />
                               </Grid>
                               <Grid item size={{ xs: 3 }}>
@@ -1123,8 +1243,11 @@ export default function MonoCartonEstimator() {
                                   name="finishingRates.metpet"
                                   value={values.finishingRates.metpet}
                                   onChange={handleChange}
+                                  onBlur={handleBlur}
                                   size="small"
                                   sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                  error={touched.finishingRates?.metpet && Boolean(errors.finishingRates?.metpet)}
+                                  helperText={touched.finishingRates?.metpet && errors.finishingRates?.metpet}
                                 />
                               </Grid>
                               <Grid item size={{ xs: 3 }}>
@@ -1161,8 +1284,11 @@ export default function MonoCartonEstimator() {
                                 name="dieCutting.ratePerSheet"
                                 value={values.dieCutting.ratePerSheet}
                                 onChange={handleChange}
+                                onBlur={handleBlur}
                                 size="small"
                                 sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                error={touched.dieCutting?.ratePerSheet && Boolean(errors.dieCutting?.ratePerSheet)}
+                                helperText={touched.dieCutting?.ratePerSheet && errors.dieCutting?.ratePerSheet}
                               />
                             </Grid>
                             <Grid item size={{ xs: 6 }}>
@@ -1193,8 +1319,11 @@ export default function MonoCartonEstimator() {
                                   name="pastingRates.sidePasting"
                                   value={values.pastingRates.sidePasting}
                                   onChange={handleChange}
+                                  onBlur={handleBlur}
                                   size="small"
                                   sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                  error={touched.pastingRates?.sidePasting && Boolean(errors.pastingRates?.sidePasting)}
+                                  helperText={touched.pastingRates?.sidePasting && errors.pastingRates?.sidePasting}
                                 />
                               </Grid>
                               <Grid item size={{ xs: 6 }}>
@@ -1218,8 +1347,13 @@ export default function MonoCartonEstimator() {
                                   name="pastingRates.bottomPasting"
                                   value={values.pastingRates.bottomPasting}
                                   onChange={handleChange}
+                                  onBlur={handleBlur}
                                   size="small"
                                   sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                  error={
+                                    touched.pastingRates?.bottomPasting && Boolean(errors.pastingRates?.bottomPasting)
+                                  }
+                                  helperText={touched.pastingRates?.bottomPasting && errors.pastingRates?.bottomPasting}
                                 />
                               </Grid>
                               <Grid item size={{ xs: 6 }}>
@@ -1243,8 +1377,11 @@ export default function MonoCartonEstimator() {
                                   name="pastingRates.taping"
                                   value={values.pastingRates.taping}
                                   onChange={handleChange}
+                                  onBlur={handleBlur}
                                   size="small"
                                   sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                  error={touched.pastingRates?.taping && Boolean(errors.pastingRates?.taping)}
+                                  helperText={touched.pastingRates?.taping && errors.pastingRates?.taping}
                                 />
                               </Grid>
                               <Grid item size={{ xs: 6 }}>
@@ -1286,8 +1423,11 @@ export default function MonoCartonEstimator() {
                                   name="machineConfig.speed"
                                   value={values.machineConfig.speed}
                                   onChange={handleChange}
+                                  onBlur={handleBlur}
                                   size="small"
                                   sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                  error={touched.machineConfig?.speed && Boolean(errors.machineConfig?.speed)}
+                                  helperText={touched.machineConfig?.speed && errors.machineConfig?.speed}
                                 />
                               </Grid>
                               <Grid item size={{ xs: 4 }}>
@@ -1311,8 +1451,13 @@ export default function MonoCartonEstimator() {
                                   name="machineConfig.costPerHour"
                                   value={values.machineConfig.costPerHour}
                                   onChange={handleChange}
+                                  onBlur={handleBlur}
                                   size="small"
                                   sx={{ "& .MuiOutlinedInput-root": { height: "36px" } }}
+                                  error={
+                                    touched.machineConfig?.costPerHour && Boolean(errors.machineConfig?.costPerHour)
+                                  }
+                                  helperText={touched.machineConfig?.costPerHour && errors.machineConfig?.costPerHour}
                                 />
                               </Grid>
                               <Grid item size={{ xs: 4 }}>
@@ -1326,8 +1471,9 @@ export default function MonoCartonEstimator() {
                       </Box>
 
                       {/* Save Button */}
-                      <ToastContainer />
+                      <ToastContainer position="top-right" autoClose={3000} />
                       <Button
+                        type="submit"
                         fullWidth
                         variant="contained"
                         disabled={isSubmitting}
@@ -1345,6 +1491,7 @@ export default function MonoCartonEstimator() {
                       >
                         💾 {isSubmitting ? "Saving..." : "Save All Configurations"}
                       </Button>
+
                     </Form>
                   )}
                 </Formik>
