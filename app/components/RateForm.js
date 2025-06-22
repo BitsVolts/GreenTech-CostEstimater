@@ -26,7 +26,7 @@ import * as Yup from "yup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useRateConfig from "../hooks/useRateConfig";
-import mapFormValuesToBackend from "../utils/mapFormvaluesToBackend";
+import mapFormValuesToBackend from "../utils/mapFormValuesToBackend";
 
 const RateForm = () => {
   const { rateConfigInitialValues, loading, error } = useRateConfig();
