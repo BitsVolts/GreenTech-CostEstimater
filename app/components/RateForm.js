@@ -209,14 +209,17 @@ const RateForm = () => {
     // setIsSubmitting(true);
     console.log(values);
     try {
-      const payload =   mapFormValuesToBackend(values);
-      const response = await fetch("http://localhost:3000/api/update-rates", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const payload = mapFormValuesToBackend(values);
+      const response = await fetch(
+        "https://greentech-api.bitsandvolts.in/api/update-rates",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

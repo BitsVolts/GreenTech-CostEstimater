@@ -1,41 +1,63 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Box, Typography, TextField, Button, Grid, FormControl, Select, MenuItem, FormHelperText } from "@mui/material"
-import { Formik, Form } from "formik"
-import * as Yup from "yup"
-import { ToastContainer, toast } from "react-toastify"
-import "react-toastify/dist/ReactToastify.css"
-import CostEstimationModal from "../modals/CostEstimationModal"
+import { useState } from "react";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  Grid,
+  FormControl,
+  Select,
+  MenuItem,
+  FormHelperText,
+} from "@mui/material";
+import { Formik, Form } from "formik";
+import * as Yup from "yup";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import CostEstimationModal from "../modals/CostEstimationModal";
 
 // Custom Icons (replace with your actual icons)
-const ClipboardIcon = () => <span style={{ marginRight: 8 }}>📋</span>
-const TagIcon = () => <span style={{ marginRight: 8 }}>🏷️</span>
-const PrintIcon = () => <span style={{ marginRight: 8 }}>🖨️</span>
-const GearIcon = () => <span style={{ marginRight: 8 }}>⚙️</span>
+const ClipboardIcon = () => <span style={{ marginRight: 8 }}>📋</span>;
+const TagIcon = () => <span style={{ marginRight: 8 }}>🏷️</span>;
+const PrintIcon = () => <span style={{ marginRight: 8 }}>🖨️</span>;
+const GearIcon = () => <span style={{ marginRight: 8 }}>⚙️</span>;
 
 // Mock modal component - replace with your actual modal
 
 const CostEstimateForm = () => {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [openModal, setOpenModal] = useState(false)
-  const [costResult, setCostResult] = useState(null)
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [openModal, setOpenModal] = useState(false);
+  const [costResult, setCostResult] = useState(null);
 
   // Fixed validation schema with correct field names
   const costEstimatorValidation = Yup.object({
-    length: Yup.number().positive("Length must be positive").required("Length is required"),
-    width: Yup.number().positive("Width must be positive").required("Width is required"),
-    sheetLength: Yup.number().positive("Sheet length must be positive").required("Sheet length is required"),
-    sheetWidth: Yup.number().positive("Sheet width must be positive").required("Sheet width is required"),
-    quantity: Yup.number().positive("Quantity must be positive").required("Quantity is required"),
-    gsm: Yup.number().positive("GSM must be positive").required("GSM is required"),
+    length: Yup.number()
+      .positive("Length must be positive")
+      .required("Length is required"),
+    width: Yup.number()
+      .positive("Width must be positive")
+      .required("Width is required"),
+    sheetLength: Yup.number()
+      .positive("Sheet length must be positive")
+      .required("Sheet length is required"),
+    sheetWidth: Yup.number()
+      .positive("Sheet width must be positive")
+      .required("Sheet width is required"),
+    quantity: Yup.number()
+      .positive("Quantity must be positive")
+      .required("Quantity is required"),
+    gsm: Yup.number()
+      .positive("GSM must be positive")
+      .required("GSM is required"),
     materialType: Yup.string().required("Material type is required"),
     cmykColors: Yup.string().required("CMYK color count is required"),
     pantoneColors: Yup.string().required("Pantone color count is required"),
     laminationType: Yup.string().required("Lamination type is required"),
     pastingOptions: Yup.string().required("Pasting/Taping type is required"),
     finishingTypes: Yup.string().required("Finishing type is required"),
-  })
+  });
 
   // Initial values with correct field names
   const costEstimatorInitialValues = {
@@ -51,54 +73,64 @@ const CostEstimateForm = () => {
     laminationType: "",
     pastingOptions: "",
     finishingTypes: "",
-  }
+  };
 
   // Fixed submit handler
   const handleCostEstimatorSubmit = async (values, { setSubmitting }) => {
-    setIsSubmitting(true)
-    console.log("Form submitted with values:", values)
+    setIsSubmitting(true);
+    console.log("Form submitted with values:", values);
 
     try {
-      const response = await fetch("http://localhost:3000/api/calculate-cost", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(values),
-      })
+      const response = await fetch(
+        "https://greentech-api.bitsandvolts.in/api/calculate-cost",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(values),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`)
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
 
-      const data = await response.json()
-      setCostResult(data)
-      setOpenModal(true)
-      toast.success("Cost estimated successfully!")
+      const data = await response.json();
+      setCostResult(data);
+      setOpenModal(true);
+      toast.success("Cost estimated successfully!");
     } catch (error) {
-      console.error("Error submitting cost estimation:", error)
-      toast.error("Failed to estimate cost.")
+      console.error("Error submitting cost estimation:", error);
+      toast.error("Failed to estimate cost.");
     } finally {
-      setSubmitting(false)
-      setIsSubmitting(false)
+      setSubmitting(false);
+      setIsSubmitting(false);
     }
-   }
+  };
 
   return (
     <Box sx={{ px: 4, pb: 4, maxWidth: 1200, mx: "auto" }}>
       {/* {openModal && costResult && ( */}
-        <CostEstimationModal
-          open={openModal}
-          onClose={() => setOpenModal(false)}
-          costData={costResult}
-        />
+      <CostEstimationModal
+        open={openModal}
+        onClose={() => setOpenModal(false)}
+        costData={costResult}
+      />
       {/* )} */}
       <Formik
         initialValues={costEstimatorInitialValues}
         validationSchema={costEstimatorValidation}
         onSubmit={handleCostEstimatorSubmit}
       >
-        {({ errors, touched, isSubmitting, values, handleChange, handleBlur }) => (
+        {({
+          errors,
+          touched,
+          isSubmitting,
+          values,
+          handleChange,
+          handleBlur,
+        }) => (
           <Form>
             {/* Product Specifications */}
             <Box sx={{ mb: 4 }}>
@@ -392,7 +424,13 @@ const CostEstimateForm = () => {
                     >
                       Material Type
                     </Typography>
-                    <FormControl fullWidth size="small" error={touched.materialType && Boolean(errors.materialType)}>
+                    <FormControl
+                      fullWidth
+                      size="small"
+                      error={
+                        touched.materialType && Boolean(errors.materialType)
+                      }
+                    >
                       <Select
                         name="materialType"
                         value={values.materialType}
@@ -451,7 +489,11 @@ const CostEstimateForm = () => {
                   >
                     CMYK Color Count
                   </Typography>
-                  <FormControl fullWidth size="small" error={touched.cmykColors && Boolean(errors.cmykColors)}>
+                  <FormControl
+                    fullWidth
+                    size="small"
+                    error={touched.cmykColors && Boolean(errors.cmykColors)}
+                  >
                     <Select
                       name="cmykColors"
                       value={values.cmykColors}
@@ -473,7 +515,9 @@ const CostEstimateForm = () => {
                       <MenuItem value="3">3 Colors</MenuItem>
                       <MenuItem value="4">4 Colors (Full Color)</MenuItem>
                     </Select>
-                    {touched.cmykColors && errors.cmykColors && <FormHelperText>{errors.cmykColors}</FormHelperText>}
+                    {touched.cmykColors && errors.cmykColors && (
+                      <FormHelperText>{errors.cmykColors}</FormHelperText>
+                    )}
                   </FormControl>
                 </Grid>
                 <Grid item size={{ xs: 6 }}>
@@ -488,7 +532,13 @@ const CostEstimateForm = () => {
                   >
                     Pantone Color Count
                   </Typography>
-                  <FormControl fullWidth size="small" error={touched.pantoneColors && Boolean(errors.pantoneColors)}>
+                  <FormControl
+                    fullWidth
+                    size="small"
+                    error={
+                      touched.pantoneColors && Boolean(errors.pantoneColors)
+                    }
+                  >
                     <Select
                       name="pantoneColors"
                       value={values.pantoneColors}
@@ -548,7 +598,9 @@ const CostEstimateForm = () => {
                     <FormControl
                       fullWidth
                       size="small"
-                      error={touched.laminationType && Boolean(errors.laminationType)}
+                      error={
+                        touched.laminationType && Boolean(errors.laminationType)
+                      }
                     >
                       <Select
                         name="laminationType"
@@ -559,7 +611,9 @@ const CostEstimateForm = () => {
                         sx={{
                           height: "40px",
                           "& .MuiSelect-select": {
-                            color: values.laminationType ? "#212529" : "#adb5bd",
+                            color: values.laminationType
+                              ? "#212529"
+                              : "#adb5bd",
                           },
                         }}
                       >
@@ -591,7 +645,9 @@ const CostEstimateForm = () => {
                     <FormControl
                       fullWidth
                       size="small"
-                      error={touched.finishingTypes && Boolean(errors.finishingTypes)}
+                      error={
+                        touched.finishingTypes && Boolean(errors.finishingTypes)
+                      }
                     >
                       <Select
                         name="finishingTypes"
@@ -602,7 +658,9 @@ const CostEstimateForm = () => {
                         sx={{
                           height: "40px",
                           "& .MuiSelect-select": {
-                            color: values.finishingTypes ? "#212529" : "#adb5bd",
+                            color: values.finishingTypes
+                              ? "#212529"
+                              : "#adb5bd",
                           },
                         }}
                       >
@@ -651,7 +709,13 @@ const CostEstimateForm = () => {
                 >
                   Pasting/Taping Type
                 </Typography>
-                <FormControl fullWidth size="small" error={touched.pastingOptions && Boolean(errors.pastingOptions)}>
+                <FormControl
+                  fullWidth
+                  size="small"
+                  error={
+                    touched.pastingOptions && Boolean(errors.pastingOptions)
+                  }
+                >
                   <Select
                     name="pastingOptions"
                     value={values.pastingOptions}
@@ -707,7 +771,7 @@ const CostEstimateForm = () => {
         )}
       </Formik>
     </Box>
-  )
-}
+  );
+};
 
-export default CostEstimateForm
+export default CostEstimateForm;
