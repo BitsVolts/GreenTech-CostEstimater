@@ -26,7 +26,7 @@ import * as Yup from "yup";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import useRateConfig from "../hooks/useRateConfig";
-import mapFormValuesToBackend from "../utils/mapFormvaluesTobackend";
+import mapFormValuesToBackend from "../utils/mapFormValuesToBackend";
 
 const RateForm = () => {
   const { rateConfigInitialValues, loading, error } = useRateConfig();
@@ -209,14 +209,17 @@ const RateForm = () => {
     // setIsSubmitting(true);
     console.log(values);
     try {
-      const payload =   mapFormValuesToBackend(values);
-      const response = await fetch("http://localhost:3000/api/update-rates", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      const payload = mapFormValuesToBackend(values);
+      const response = await fetch(
+        "https://greentech-api.bitsandvolts.in/api/update-rates",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);

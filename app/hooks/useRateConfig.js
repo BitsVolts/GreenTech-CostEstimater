@@ -4,14 +4,16 @@ const userateConfigInitialValues = () => {
   const [rateConfigInitialValues, setRateConfigInitialValues] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
- 
 
   const fetchrateConfigInitialValues = async () => {
     try {
-      const res = await fetch("http://localhost:3000/api/get-rates");
+      const res = await fetch(
+        "https://greentech-api.bitsandvolts.in/api/get-rates"
+      );
       if (!res.ok)
         throw new Error(`Failed to fetch rate config: ${res.status}`);
       const data = await res.json();
+      console.log(data);
 
       // Format the backend data
       const formattedData = {
@@ -65,8 +67,6 @@ const userateConfigInitialValues = () => {
     }
   };
 
-
-  
   // Load on mount
   useEffect(() => {
     fetchrateConfigInitialValues();
